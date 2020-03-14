@@ -48,7 +48,11 @@ for (let j = 0; j < folders.length; j++) {
 }
 for (let i = 0; i < files.length; i++) {
   let input = "\"" + files[i] + "\"";
-  let output = "\"" + files[i].slice(0, directory.length) + " AAC" + files[i].slice(directory.length, -4) + "m4a" + "\"";
+  if (files[i].word.slice(-5) == ".flac") {
+    let output = "\"" + files[i].slice(0, directory.length) + " AAC" + files[i].slice(directory.length, -5) + ".m4a" + "\"";
+  } else {
+    let output = "\"" + files[i].slice(0, directory.length) + " AAC" + files[i].slice(directory.length, -4) + ".m4a" + "\"";
+  }
   exec("ffmpeg -i " + input + " -map 0:0 -c:a aac -b:a 285k " + output);
   console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length);
   console.log(((i / files.length) * 100) + "% complete.");
