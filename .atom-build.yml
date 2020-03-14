@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 cmd: node main.js --dir ""D:\New Folder""
+=======
+cmd: node main.js --dir ""D:\New Folder""
+>>>>>>> 49581d68df3440aed7cba6ef41ed0c7d72aff6af
