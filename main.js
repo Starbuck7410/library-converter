@@ -1,4 +1,7 @@
-const yargs = require('yargs');
+const yargs = require('yargs').option('from', {
+  type: 'array',
+  desc: 'From which file types to convert',
+});
 const exec = require('child_process').execSync;
 const argv = yargs.argv;
 const codecs = {
@@ -6,6 +9,12 @@ const codecs = {
   wav: "pcm_s16le",
   flac: "flac"
 };
+
+let removeSilence = false;
+if (argv.removeSilence) {
+  removeSilence = true;
+  console.log("Removing silence from files");
+}
 
 let directory = "";
 if (argv.dir) {
@@ -16,19 +25,20 @@ if (argv.dir) {
 }
 
 let type = "libmp3lame";
+let format = "mp3";
 if (argv.codec) {
   type = codecs[argv.codec];
+  format = argv.codec;
+
 };
 
-yargs.option('from', {
-  type: 'array',
-  desc: 'From which file types to convert',
-});
+
 
 let from = ["flac", "wav"];
 if (argv.from) {
   from = argv.from;
 };
+console.log(from);
 
 
 let rate = "320";
@@ -64,43 +74,52 @@ let walk = walkSync(directory);
 let filesUnfiltered = walk[0];
 let folders = walk[1];
 let files = [];
-let otherFiles = [];
+let otherFiles = filesUnfiltered;
 
 for (let i = 0; i < from.length; i++) {
-  files.push(filesUnfiltered.filter(word => word.endsWith("." + from[i])));
-  otherFiles.push(filesUnfiltered.filter(word => word.endsWith("." + from[i]) === false));
+  files = files.concat(filesUnfiltered.filter(word => word.endsWith("." + from[i])));
+  otherFiles = otherFiles.filter(word => !word.endsWith("." + from[i]));
 }
+
+
 console.log(files);
 
-// for (let j = 0; j < folders.length; j++) {
-//   let folder = folders[j].slice(0, directory.length) + " " + type + folders[j].slice(directory.length);
-//   exec("if not exist \"" + folder + "\" mkdir \"" + folder + "\"");
-// }
+for (let j = 0; j < folders.length; j++) {
+  let folder = folders[j].slice(0, directory.length) + " " + format + folders[j].slice(directory.length);
+  exec("if not exist \"" + folder + "\" mkdir \"" + folder + "\"");
+}
 
 
-// for (let i = 0; i < files.length; i++) {
-//   let input = "\"" + files[i] + "\"";
-//   let output = ""
-//   if (files[i].slice(-5) == ".flac") {
-//     output = "\"" + files[i].slice(0, directory.length) + " " + type + files[i].slice(directory.length, -5) + ".mp3" + "\"";
-//   } else {
-//     output = "\"" + files[i].slice(0, directory.length) + " " + type + files[i].slice(directory.length, -4) + ".mp3" + "\"";
-//   }
-//   console.log(output);
-//   exec("ffmpeg -i " + input + " -map 0:0 -c:a " + type + " -b:a " + rate + "k " + output);
-//   console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length);
-//   console.log(((i`` / files.length) * 100) + "% complete.");
+for (let j = 0; j < from.length; j++) {
 
-// }
+  for (let i = 0; i < files.length; i++) {
+    let input = "\"" + files[i] + "\"";
+    let output;
+    if (files[i].endsWith("." + from[j])) {
+      output = "\"" + files[i].slice(0, directory.length) + " " + format + files[i].slice(directory.length, -1 * (from[j].length + 1)) + "." + format + "\"";
+    }
+    if (output) {
+      console.log(input, output);
+      if (removeSilence) {
+        exec("ffmpeg -y -i " + input + " -map 0:0 -c:a " + type + " -b:a " + rate + "k " + " -af \"areverse,silenceremove=start_periods=1,areverse\" " + output);
+      } else {
+        exec("ffmpeg -y -i " + input + " -map 0:0 -c:a " + type + " -b:a " + rate + "k " + output);
+      }
+      console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length);
+      console.log((((i + 1) / files.length) * 100) + "% complete.");
+    }
+
+  }
+
+}
 
 
+for (let k = 0; k < otherFiles.length; k++) {
+  let input = "\"" + otherFiles[k] + "\"";
+  let output = "\"" + otherFiles[k].slice(0, directory.length) + " " + format + otherFiles[k].slice(directory.length) + "\"";
+  exec("ECHO F|xcopy " + input + " " + output + " /H /Y");
 
-// for (let k = 0; k < otherFiles.length; k++) {
-//   let input = "\"" + otherFiles[k] + "\"";
-//   let output = "\"" + otherFiles[k].slice(0, directory.length) + " " + type + otherFiles[k].slice(directory.length) + "\"";
-//   exec("ECHO F|xcopy " + input + " " + output + " /H");
-
-// }
+}
 
 console.log("Job done sucessfully!");
 
