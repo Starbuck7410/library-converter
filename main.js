@@ -40,10 +40,10 @@ if (argv.rate) {
 
 // List all files in a directory in Node.js recursively in a synchronous fashion
 let walkSync = function (dir, filelist, dirlist) {
-  let path = path || require('path');
-  let fs = fs || require('fs'),
+  var path = path || require('path');
+  var fs = fs || require('fs'),
     files = fs.readdirSync(dir);
-  let dirlist = dirlist || [];
+  var dirlist = dirlist || [];
   filelist = filelist || [];
   files.forEach(function (file) {
     if (fs.statSync(path.join(dir, file)).isDirectory()) {
