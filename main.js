@@ -4,6 +4,8 @@ const yargs = require('yargs').option('from', {
 });
 const exec = require('child_process').execSync;
 const argv = yargs.argv;
+const fs = require('fs');
+const path = require('path');
 const codecs = {
   mp3: "libmp3lame",
   wav: "pcm_s16le",
@@ -14,6 +16,12 @@ let removeSilence = false;
 if (argv.removeSilence) {
   removeSilence = true;
   console.log("Removing silence from files");
+}
+
+let skipIfExists = false;
+if (argv.skipIfExists) {
+  skipIfExists = true;
+  console.log("Skipping existing files");
 }
 
 let directory = "";
@@ -50,9 +58,7 @@ if (argv.rate) {
 
 // List all files in a directory in Node.js recursively in a synchronous fashion
 let walkSync = function (dir, filelist, dirlist) {
-  var path = path || require('path');
-  var fs = fs || require('fs'),
-    files = fs.readdirSync(dir);
+  let files = fs.readdirSync(dir);
   var dirlist = dirlist || [];
   filelist = filelist || [];
   files.forEach(function (file) {
@@ -75,6 +81,7 @@ let filesUnfiltered = walk[0];
 let folders = walk[1];
 let files = [];
 let otherFiles = filesUnfiltered;
+let fails = []
 
 for (let i = 0; i < from.length; i++) {
   files = files.concat(filesUnfiltered.filter(word => word.endsWith("." + from[i])));
@@ -90,16 +97,12 @@ for (let j = 0; j < folders.length; j++) {
 }
 
 
-for (let j = 0; j < from.length; j++) {
-
-  for (let i = 0; i < files.length; i++) {
-    let input = "\"" + files[i] + "\"";
-    let output;
-    if (files[i].endsWith("." + from[j])) {
-      output = "\"" + files[i].slice(0, directory.length) + " " + format + files[i].slice(directory.length, -1 * (from[j].length + 1)) + "." + format + "\"";
-    }
-    if (output) {
-      console.log(input, output);
+for (let i = 0; i < files.length; i++) {
+  let input = "\"" + files[i] + "\"";
+  let output = "\"" + files[i].slice(0, directory.length) + " " + format + path.parse(files[i].slice(directory.length)).dir + "\\" + path.parse(files[i].slice(directory.length)).name + "." + format + "\"";
+  // console.log(input, output);
+  if (!(fs.existsSync(path.join(path.resolve(output.slice(1, -1)))) && skipIfExists)) {
+    try {
       if (removeSilence) {
         exec("ffmpeg -y -i " + input + " -map 0:0 -c:a " + type + " -b:a " + rate + "k " + " -af \"areverse,silenceremove=start_periods=1,areverse\" " + output);
       } else {
@@ -107,20 +110,36 @@ for (let j = 0; j < from.length; j++) {
       }
       console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length);
       console.log((((i + 1) / files.length) * 100) + "% complete.");
+    } catch (error) {
+      console.error(error);
+      exec("del " + output);
+      fails.push(input)
     }
-
+  } else {
+    console.log("\x1b[32mFile " + output + " already exists. Skipping...\x1b[37m")
   }
-
 }
+
 
 
 for (let k = 0; k < otherFiles.length; k++) {
   let input = "\"" + otherFiles[k] + "\"";
   let output = "\"" + otherFiles[k].slice(0, directory.length) + " " + format + otherFiles[k].slice(directory.length) + "\"";
-  exec("ECHO F|xcopy " + input + " " + output + " /H /Y");
+  try {
+    exec("ECHO F|xcopy " + input + " " + output + " /H /Y");
+  } catch (error) {
+    console.error(error)
+    fails.push(output)
+  }
 
 }
 
-console.log("Job done sucessfully!");
+if (fails == []) {
+  console.log("Job done sucessfully!");
+} else {
+  console.log("Job done with \x1b[31m" + fails.length + "\x1b[37m errors:");
+  console.log(fails);
+
+}
 
 //wait here just a sec

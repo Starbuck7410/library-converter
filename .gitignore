@@ -4,3 +4,4 @@ test**/
 build.bat
 main.exe
 library-converter.exe
+test.txt
