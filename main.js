@@ -89,8 +89,6 @@ for (let i = 0; i < from.length; i++) {
 }
 
 
-console.log(files);
-
 for (let j = 0; j < folders.length; j++) {
   let folder = folders[j].slice(0, directory.length) + " " + format + folders[j].slice(directory.length);
   exec("if not exist \"" + folder + "\" mkdir \"" + folder + "\"");
@@ -125,21 +123,25 @@ for (let i = 0; i < files.length; i++) {
 for (let k = 0; k < otherFiles.length; k++) {
   let input = "\"" + otherFiles[k] + "\"";
   let output = "\"" + otherFiles[k].slice(0, directory.length) + " " + format + otherFiles[k].slice(directory.length) + "\"";
-  try {
-    exec("ECHO F|xcopy " + input + " " + output + " /H /Y");
-  } catch (error) {
-    console.error(error)
-    fails.push(output)
+  if (!(fs.existsSync(path.join(path.resolve(output.slice(1, -1)))) && skipIfExists)) {
+    try {
+      console.log("Copying file: " + output)
+      console.log((((k + 1) / otherFiles.length) * 100) + "% complete.");
+      exec("ECHO F|xcopy " + input + " " + output + " /H /Y");
+    } catch (error) {
+      console.error(error)
+      fails.push(output)
+    }
+  } else {
+    console.log("\x1b[32mFile " + output + " already exists. Skipping...\x1b[37m")
   }
 
 }
 
-if (fails == []) {
+if (fails.length == 0) {
   console.log("Job done sucessfully!");
 } else {
   console.log("Job done with \x1b[31m" + fails.length + "\x1b[37m errors:");
   console.log(fails);
 
 }
-
-//wait here just a sec
