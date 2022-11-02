@@ -44,8 +44,8 @@ if (argv.codec) {
 };
 type = codecs[format];
 
+let rate = "320";
 if (format == "mp3") {
-  let rate = "320";
   if (argv.rate) {
     rate = argv.rate;
   };
@@ -127,6 +127,7 @@ for (let i = 0; i < files.length; i++) {
 for (let k = 0; k < otherFiles.length; k++) {
   let input = "\"" + otherFiles[k] + "\"";
   let output = "\"" + otherFiles[k].slice(0, directory.length) + " " + format + otherFiles[k].slice(directory.length) + "\"";
+  console.log(path.join(path.resolve(output.slice(1, -1))));
   if (!(fs.existsSync(path.join(path.resolve(output.slice(1, -1)))) && !redoAllFiles)) { // I don't want to write that line ever again
     try {
       console.log("Copying file: " + output)
