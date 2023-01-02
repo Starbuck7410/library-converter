@@ -37,13 +37,14 @@ async function convert(directory, from, format, rate, removeSilence, redoAllFile
         let input = files[i];
         let output = files[i].slice(0, directory.length) + " " + format + path.parse(files[i].slice(directory.length)).dir + "\\" + path.parse(files[i].slice(directory.length)).name + "." + format;
 
-        console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length); // lol ffm-pegging
-        console.log((((i + 1) / files.length) * 100) + "% complete.");
-
+        console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length + ":"); // lol ffm-pegging
+        console.log(input);
+        console.log((((i + 1) / files.length) * 100).toFixed(2) + "% complete.");
+        console.log("...");
         try {
             await ffmpegSync(input, output, redoAllFiles, rate, removeSilence);
         } catch (error) {
-            console.error(error);
+            console.log("\x1b[31mFile failed to convert: " + input + "\x1b[37m");
             fs.unlinkSync(output);
             fails.push(input);
         }
@@ -117,7 +118,7 @@ async function ffmpegSync(input, output, redo, rate, removeSilence) {
                 resolve()
             })
             .on('error', (err) => {
-                return reject(new Error(err))
+                return reject(err)
             })
     })
 }

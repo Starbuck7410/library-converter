@@ -2,15 +2,15 @@
 Converts music libraries to many formats!
 
 
-
 Just run with library-converter.exe --dir "C:\your\music\library" and your library will be converted!
 It will create "C:\your\music\library mp3", covert your wav and flac files to mp3s, and copy everything there! None of your actual library is touched.
 
+Supports resume from a failure, removing silence from the beginning and end of each track (for music rips), and much more, with even more to come!
+
 If you have nodeJS installed you can also just run main.js.
 
-Note: Requires ffmpeg. tested with n5.0-4-g911d7f167c-20220207.
-Also, this is currently windows only, because it relies on shell operations for creating directories and copying files.
-If you want me to make it work with Mac/Linux/Whatever feel free to message me or do it yourself.
+Note: Requires ffmpeg. tested with 2022-12-15-git-9adf02247c-full_build.
+Also, this is now cross platform! Currently only tested on Windows 11 as I have too little time to actually test it on my hardware at home, but it should work on Linux and Mac.
 
 ## options:
 
@@ -38,3 +38,7 @@ If enabled, removes silence from end of file.
 The program automatically skips files if they already exist, but you can tell it not to if you want to for some reason.
 
 
+## In the TODO list:
+
+- Multithreading
+- Logging into a file
