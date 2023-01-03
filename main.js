@@ -50,15 +50,20 @@ if (format == "mp3") {
   };
 }
 
+let threads = 1;
+if (argv.threads) {
+  threads = argv.threads;
+};
+
 let from = ["flac", "wav"];
 if (argv.from) {
   from = argv.from;
 };
-console.log("Converting all files with formats: " + from);
+console.log("Converting all files with format0s: " + from);
 
 
 
-converter.convert(directory, from, format, rate, removeSilence, redoAllFiles);
+converter.convert(directory, from, format, rate, removeSilence, redoAllFiles, threads);
 
 
 
