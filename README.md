@@ -29,7 +29,7 @@ It converts your library to the selected format. The default is mp3. (Example: -
 Tells the program which formats to convert from. The default is wav and flac. (Example: --from oog m4a flac)
 
 ### --rate (bitrate)
-Selects the desired bitrate to convert to. The default is 320. (Example: --rate 128)
+Selects the desired bitrate (in kb/s) to convert to. The default is 320. (Example: --rate 128)
 
 ### --threads
 If you want library-converter to run multithreaded and convert several files simultaneously, use this option. The default is 1. (Example: --threads 4)
