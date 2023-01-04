@@ -59,7 +59,7 @@ let from = ["flac", "wav"];
 if (argv.from) {
   from = argv.from;
 };
-console.log("Converting all files with format0s: " + from);
+console.log("Converting all files with formats: " + from);
 
 
 
