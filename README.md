@@ -15,7 +15,7 @@ Also, this is now cross platform! Currently only tested on Windows 11 as I have 
 ## options:
 
 ### --dir (working directory)
-Tells the program which library to take the files from. (Example: --dir "D:/Music Library")
+Tells the program which library to take the files from. (Example: --dir "C:\your\music\library")
 
 ### --codec (codec)
 Currently takes:
