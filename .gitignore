@@ -3,6 +3,7 @@ test/
 test**/
 build.bat
 main.exe
-library-converter.exe
+library-converter*
 test.txt
 builds**
+do.bat

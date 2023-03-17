@@ -62,7 +62,6 @@ if (argv.from) {
 console.log("Converting all files with format0s: " + from);
 
 
-
 converter.convert(directory, from, format, rate, removeSilence, redoAllFiles, threads);
 
 
