@@ -15,7 +15,7 @@ Also, this is now cross platform! Currently only tested on Windows 11 as I have 
 ## options:
 
 ### --dir (working directory)
-Tells the program which library to take the files from.
+Tells the program which library to take the files from. (Example: --dir "C:\your\music\library")
 
 ### --codec (codec)
 Currently takes:
@@ -23,22 +23,25 @@ Currently takes:
 - wav
 - flac
 
-It converts your library to the selected codec. default is mp3.
+It converts your library to the selected format. The default is mp3. (Example: --codec flac)
 
 ### --from (from)
-Tells the program which formats to convert from. default is wav and flac.
+Tells the program which formats to convert from. The default is wav and flac. (Example: --from oog m4a flac)
 
 ### --rate (bitrate)
-Selects the desired bitrate to convert to. default is 320.
+Selects the desired bitrate (in kb/s) to convert to. The default is 320. (Example: --rate 128)
+
+### --threads
+If you want library-converter to run multithreaded and convert several files simultaneously, use this option. The default is 1. (Example: --threads 4)
 
 ### --removeSilence
-If enabled, removes silence from end of file.
+If this flag is enabled, library-converter will remove silence from the start and end of all the files.
 
 ### --redoAllFiles
-The program automatically skips files if they already exist, but you can tell it not to if you want to for some reason.
+If this flag is enabled, instead of skipping files that already exist, library-converter will re-convert them.
 
 
 ## In the TODO list:
 
-- Multithreading
 - Logging into a file
+- Time estimate and benchmarking
