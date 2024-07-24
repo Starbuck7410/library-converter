@@ -43,5 +43,6 @@ If this flag is enabled, instead of skipping files that already exist, library-c
 
 ## In the TODO list:
 
+- Fixing bug on Linux where the folders created are wrong
 - Logging into a file
 - Time estimate and benchmarking
