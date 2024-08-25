@@ -2,9 +2,8 @@ const yargs = require('yargs').option('from', {
   type: 'array',
   desc: 'Which file types to convert',
 });
-const exec = require('child_process').execSync;
-const argv = yargs.argv;
 const converter = require('./converter.js');
+const argv = yargs.argv;
 
 // instead of writing "libmp3lame" you can just type in "mp3" and it'll work
 // adding more codecs in the future is easy, as all you'll need to do is to just add them here
@@ -61,8 +60,13 @@ if (argv.from) {
 };
 console.log("Converting all files with formats: " + from);
 
+let log = false;
+if (argv.log) {
+  log = argv.log;
+}
 
-converter.convert(directory, from, format, rate, removeSilence, redoAllFiles, threads);
+
+converter.convert(directory, from, format, rate, removeSilence, redoAllFiles, threads, log);
 
 
 

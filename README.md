@@ -32,7 +32,7 @@ Tells the program which formats to convert from. The default is wav and flac. (E
 Selects the desired bitrate (in kb/s) to convert to. The default is 320. (Example: --rate 128)
 
 ### --threads
-If you want library-converter to run multithreaded and convert several files simultaneously, use this option. The default is 1. (Example: --threads 4)
+If you want library-converter to run multithreaded and convert several files simultaneously, use this option. The default is 1, to avoid issues on older machines. (Example: --threads 4)
 
 ### --removeSilence
 If this flag is enabled, library-converter will remove silence from the start and end of all the files.
@@ -40,9 +40,9 @@ If this flag is enabled, library-converter will remove silence from the start an
 ### --redoAllFiles
 If this flag is enabled, instead of skipping files that already exist, library-converter will re-convert them.
 
+### --log (location)
+If this flag is set, library-converter will save a log with all failed files to the location given in the argument. (Example: --log log.txt)
+
 
 ## In the TODO list:
-
-- Fixing bug on Linux where the folders created are wrong
-- Logging into a file
-- Time estimate and benchmarking
+- Time estimate and benchmarking (This one is gonna be a tad difficult, as I have no idea how to measure run time on multithreaded stuff)

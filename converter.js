@@ -4,11 +4,9 @@ const ffmpeg = require('fluent-ffmpeg');
 const { finished } = require('stream');
 module.exports = { convert: convert };
 
-
-
-async function convert(directory, from, format, rate, removeSilence, redoAllFiles, threads) {
+// Main function =======================
+async function convert(directory, from, format, rate, removeSilence, redoAllFiles, threads, log) {
     // List all files in a directory in Node.js recursively in a synchronous fashion
-    // (Shamelessly stolen from StackOverflow)
 
 
     // This is where the fun begins
@@ -39,7 +37,8 @@ async function convert(directory, from, format, rate, removeSilence, redoAllFile
     let finishedJobs = 0;
     for (let i = 0; i < files.length; i++) {
         let input = files[i];
-        let output = files[i].slice(0, directory.length) + " " + format + path.parse(files[i].slice(directory.length)).dir + "\\" + path.parse(files[i].slice(directory.length)).name + "." + format;
+        let output = files[i].slice(0, directory.length) + " " + format + path.parse(files[i].slice(directory.length)).dir + "/" + path.parse(files[i].slice(directory.length)).name + "." + format;
+
 
         console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length + ":"); // lol ffm-pegging
         console.log(input);
@@ -91,15 +90,24 @@ async function convert(directory, from, format, rate, removeSilence, redoAllFile
     // Prints out results nicely
     if (fails.length == 0) {
         console.log("Job done sucessfully!");
+        console.log("No log file created (no errors)");
     } else {
         console.log("Job done with \x1b[31m" + fails.length + "\x1b[37m errors:");
         console.log(fails);
+        if (log) {
+            console.log("Writing log to " + log);
+            for (let i = 0; i < fails.length; i++) {
+                fs.appendFileSync(log, "Failed to convert or copy file: " + fails[i] + "\n");
+            }
+        }
+
     }
 }
 
+
 // Functions =======================
 
-function walkSync(dir, filelist, dirlist) {
+function walkSync(dir, filelist, dirlist) {    // (Shamelessly stolen from StackOverflow)
     let files = fs.readdirSync(dir);
     var dirlist = dirlist || [];
     filelist = filelist || [];
@@ -173,3 +181,6 @@ function copySync(input, output, redo) {
     }
     return null;
 }
+
+
+
