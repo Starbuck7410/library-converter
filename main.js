@@ -54,7 +54,7 @@ if (argv.threads) {
   threads = argv.threads;
 };
 
-let from = ["flac", "wav"];
+let from = ["flac", "wav", "m4a"];
 if (argv.from) {
   from = argv.from;
 };
@@ -67,7 +67,5 @@ if (argv.log) {
 
 
 converter.convert(directory, from, format, rate, removeSilence, redoAllFiles, threads, log);
-
-
 
 // Code by StackOverflow, assembly by Starbuck7410
