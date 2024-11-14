@@ -2,90 +2,133 @@ const fs = require('fs');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const { finished } = require('stream');
-module.exports = { convert: convert };
+const interface = require('./interface.js');
+module.exports = {
+    convert: convert,
+    scanLibrary: scanLibrary
+};
 
-// Main function =======================
-async function convert(directory, from, format, rate, removeSilence, redoAllFiles, threads, log) {
-    // List all files in a directory in Node.js recursively in a synchronous fashion
 
-
-    // This is where the fun begins
-    let walk = walkSync(directory);
-    let filesUnfiltered = walk[0];
+function scanLibrary(sourceDir, from) {
+    let walk = walkSync(sourceDir);
+    let allFiles = walk[0];
     let folders = walk[1];
-    let files = [];
-    let otherFiles = filesUnfiltered;
-    let fails = []
+    let filesToCopy = allFiles;
+    let filesToConvert = [];
 
-    // Sorts the file tree into things to sort, and things to copy.
+    // Sorts the file tree into things to convert, and things to copy.
     for (let i = 0; i < from.length; i++) {
-        files = files.concat(filesUnfiltered.filter(word => word.endsWith("." + from[i])));
-        otherFiles = otherFiles.filter(word => !word.endsWith("." + from[i]));
+        filesToConvert = filesToConvert.concat(allFiles.filter(word => word.endsWith("." + from[i])));
+        filesToCopy = filesToCopy.filter(word => !word.endsWith("." + from[i]));
     }
+
+
+    for (let i = 0; i < filesToConvert.length; i++) {
+        filesToConvert[i] = filesToConvert[i].slice(sourceDir.length);
+    }
+
+    for (let i = 0; i < filesToCopy.length; i++) {
+        filesToCopy[i] = filesToCopy[i].slice(sourceDir.length);
+    }
+
+    for (let i = 0; i < folders.length; i++) {
+        folders[i] = folders[i].slice(sourceDir.length);
+    }
+
+    return [filesToConvert, filesToCopy, folders];
+}
+
+
+
+async function convert(scannedLibrary, sourceDir, targetDir, format, rate, removeSilence, redoAllFiles, threads, log) {
+
+    let filesToConvert = scannedLibrary[0];
+    let filesToCopy = scannedLibrary[1];
+    let folders = scannedLibrary[2];
+    let fails = [];
 
     // Rebuilds the folder tree
     for (let j = 0; j < folders.length; j++) {
-        let folder = folders[j].slice(0, directory.length) + " " + format + folders[j].slice(directory.length);
-        if (!fs.existsSync(folder)) {
-            fs.mkdirSync(folder);
+        if (!fs.existsSync(targetDir + folders[j])) {
+            fs.mkdirSync(targetDir + folders[j]);
         }
     }
 
     // Actually does the conversion
+    let eta = 0;
+    let now = Date.now();
     let jobs = [];
+    let workingJobs = [];
     let currentJobs = 0;
     let finishedJobs = 0;
-    for (let i = 0; i < files.length; i++) {
-        let input = files[i];
-        let output = files[i].slice(0, directory.length) + " " + format + path.parse(files[i].slice(directory.length)).dir + "/" + path.parse(files[i].slice(directory.length)).name + "." + format;
+    console.log("\n".repeat(threads + 1));
+    for (let i = 0; i < filesToConvert.length; i++) {
+        let input = sourceDir + filesToConvert[i];
+        let output = targetDir + path.parse(filesToConvert[i]).dir + "/" + path.parse(filesToConvert[i]).name + "." + format;
 
 
-        console.log("FFM-Pegging file " + (i + 1) + " out of " + files.length + ":"); // lol ffm-pegging
-        console.log(input);
-
-
+        workingJobs.push(filesToConvert[i])
         jobs.push(ffmpegSync(input, output, redoAllFiles, rate, removeSilence).then(
             () => {
                 jobs[i] = true;
+                if (finishedJobs != 0) {
+                    let etaH = Math.floor(eta / 1000 / 60 / 60);
+                    let etaM = Math.floor(eta / 1000 / 60 % 60);
+                    let etaS = Math.floor(eta / 1000 % 60);
+                    interface.drawInterface(((finishedJobs) / filesToConvert.length), etaH, etaM, etaS, workingJobs, threads, false);
+                } else {
+                    interface.drawInterface(((finishedJobs) / filesToConvert.length), "--", "--", "--", workingJobs, threads, false);
+                }
             },
             (error) => {
-                console.log("\x1b[31mFile failed to convert: " + input + "\x1b[37m");
+                // console.log("\x1b[31mFile failed to convert: " + input + "\x1b[37m");
                 fs.unlinkSync(output);
                 fails.push(input);
                 jobs[i] = true;
             }
         ).finally(
             () => {
+                workingJobs = workingJobs.filter(word => word != filesToConvert[i]);
                 currentJobs--;
                 finishedJobs++;
-                console.log((((finishedJobs) / files.length) * 100).toFixed(2) + "% complete.");
-                console.log("...");
+
             }));
 
         currentJobs++;
-        if (currentJobs >= threads) {
+        if (currentJobs > threads) {
             await Promise.race(filterJobs(jobs))
         }
+        eta = (Date.now() - now) / finishedJobs * (filesToConvert.length - finishedJobs);
     }
 
     await Promise.all(jobs);
 
-    // Copies the remaining files to the right places
-    for (let k = 0; k < otherFiles.length; k++) {
-        let input = otherFiles[k];
-        let output = otherFiles[k].slice(0, directory.length) + " " + format + otherFiles[k].slice(directory.length);
+    interface.clearLines(threads + 2);
+    console.log("ffm-pegging complete!" + "\n\n\n");
 
-        console.log("Copying file: " + output);
-        console.log((((k + 1) / otherFiles.length) * 100).toFixed(2) + "% complete.");
+    // Copies the remaining files to the right places
+    eta = 0;
+
+    for (let k = 0; k < filesToCopy.length; k++) {
+        let input = sourceDir + filesToCopy[k];
+        let output = targetDir + filesToCopy[k];
+
+        etaH = Math.floor(eta / 1000 / 60 / 60);
+        etaM = Math.floor(eta / 1000 / 60 % 60);
+        etaS = Math.floor(eta / 1000 % 60);
+        interface.drawInterface(((k + 1) / filesToCopy.length), etaH, etaM, etaS, [filesToCopy[k]], 1, true);
 
         let error = copySync(input, output);
         if (error) {
-            console.error(error);
+            // console.error(error);
             fs.unlinkSync(output);
             fails.push(input);
         }
-
+        eta = (Date.now() - now) / finishedJobs * (filesToConvert.length - finishedJobs);
     }
+
+    interface.clearLines(3);
+    console.log("Copying complete!");
 
     // Prints out results nicely
     if (fails.length == 0) {
@@ -105,9 +148,9 @@ async function convert(directory, from, format, rate, removeSilence, redoAllFile
 }
 
 
-// Functions =======================
 
-function walkSync(dir, filelist, dirlist) {    // (Shamelessly stolen from StackOverflow)
+
+function walkSync(dir, filelist, dirlist) {
     let files = fs.readdirSync(dir);
     var dirlist = dirlist || [];
     filelist = filelist || [];
@@ -128,7 +171,7 @@ function walkSync(dir, filelist, dirlist) {    // (Shamelessly stolen from Stack
 function filterJobs(queue) {
     for (j = 0; j < queue.length; j++) {
         if (queue[j] === true) {
-            queue = queue.slice(0, j).concat(queue.slice(j + 1, queue.length));
+            queue = queue.filter(word => word !== true);
             j--;
         }
     }
@@ -139,7 +182,6 @@ async function ffmpegSync(input, output, redo, rate, removeSilence, i) {
     return new Promise((resolve, reject) => {
         if (fs.existsSync(output)) {
             if (!redo) {
-                console.log("\x1b[32mFile " + output + " already exists. Skipping...\x1b[37m"); // C O L O R S
                 return resolve();
             }
             try { fs.unlinkSync(output) } catch (error) { return reject() }
@@ -168,7 +210,6 @@ async function ffmpegSync(input, output, redo, rate, removeSilence, i) {
 function copySync(input, output, redo) {
     if (fs.existsSync(output)) {
         if (!redo) {
-            console.log("\x1b[32mFile " + output + " already exists. Skipping...\x1b[37m"); // C O L O R S
             return null;
         } else {
             try { fs.unlinkSync(output) } catch (error) { return error }

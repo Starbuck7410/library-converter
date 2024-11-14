@@ -35,6 +35,9 @@ if (argv.dir) {
   console.error("Error: No directory specified");
   process.exit(1);
 }
+if (!directory.endsWith("/")) {
+  directory = directory + "/";
+}
 
 let format = "mp3";
 if (argv.codec) {
@@ -65,7 +68,19 @@ if (argv.log) {
   log = argv.log;
 }
 
+let targetDir = directory.slice(0, -1) + " " + format + "/";
+if (argv.target) {
+  targetDir = argv.target;
+}
+if (!targetDir.endsWith("/")) {
+  targetDir = targetDir + "/";
+}
 
-converter.convert(directory, from, format, rate, removeSilence, redoAllFiles, threads, log);
+
+let scannedLibrary = converter.scanLibrary(directory, from);
+
+
+
+converter.convert(scannedLibrary, directory, targetDir, format, rate, removeSilence, redoAllFiles, threads, log);
 
 // Code by StackOverflow, assembly by Starbuck7410

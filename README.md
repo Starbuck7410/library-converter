@@ -9,8 +9,8 @@ Supports resume from a failure, removing silence from the beginning and end of e
 
 If you have nodeJS installed you can also just run main.js.
 
-Note: Requires ffmpeg. tested with 2022-12-15-git-9adf02247c-full_build.
-Also, this is now cross platform! Currently only tested on Windows 11 as I have too little time to actually test it on my hardware at home, but it should work on Linux and Mac.
+Note: Requires ffmpeg.
+Also, this is now cross platform!
 
 ## options:
 
@@ -46,3 +46,6 @@ If this flag is set, library-converter will save a log with all failed files to 
 
 ## In the TODO list:
 - Time estimate and benchmarking (This one is gonna be a tad difficult, as I have no idea how to measure run time on multithreaded stuff)
+
+
+This work is licensed under the GPL-V3 license. 
