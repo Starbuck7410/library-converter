@@ -4,7 +4,7 @@
 # then please put 'unknown'.
 
 # Maintainer: Your Name <youremail@domain.com>
-pkgname=library-converter-git
+pkgname=library-converter
 pkgver=3.3.0
 pkgrel=1
 epoch=
@@ -26,22 +26,21 @@ install=
 changelog=
 source=("git+$url")
 noextract=()
-md5sums=() #generate with 'makepkg -g'
+md5sums=('SKIP') #generate with 'makepkg -g'
 
 prepare() {
     npm install
-	npm install -g @yao-pkg/pkg
+	sudo npm install @yao-pkg/pkg
 }
 
 build() {
+    cd "$srcdir/$pkgname"
 	pkg main.js --target node22-linux-x64
 }
 
-check() {
-}
-
 package() {
-	cp main /usr/bin/library-converter
+    cd "$srcdir/$pkgname"
+	sudo cp main /usr/bin/library-converter
 }
 
 # cd "$srcdir/$pkgname-$pkgver"
