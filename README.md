@@ -105,7 +105,7 @@ Specifies the destination directory for the converted library.
 - **Example**: `--target /your/library/path/compressed`
 
 ## Future Enhancements
-
+- Fix the issue with the new interface on linux. It's... not the prettiest.
 - Address the Paru package issue related to `pkg` cleanup by executing `pkg` manually rather than installing it globally in the `PKGBUILD` file.
 - Add this file to the docs on install from the AUR so you can run ```man library-converter``` to see how to use it.
 
