@@ -1,5 +1,4 @@
 node_modules/
-test/
 test**/
 build.bat
 main.exe
