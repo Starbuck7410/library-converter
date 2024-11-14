@@ -36,7 +36,7 @@ To convert your music library, run the following command:
 library-converter --dir /your/music/library"
 ```
 
-This will create a new directory `C:\your\music\library mp3`, convert all `.wav` and `.flac` files to `.mp3`, and copy them into the new directory. Your original files will remain untouched.
+This will create a new directory `/your/music/library mp3/`, convert all `.wav` and `.flac` files to `.mp3`, and copy them into the new directory. Your original files will remain untouched.
 
 ### OS Support
 
