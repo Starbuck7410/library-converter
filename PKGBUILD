@@ -1,10 +1,5 @@
-# This is an example PKGBUILD file. Use this as a start to creating your own,
-# and remove these comments. For more information, see 'man PKGBUILD'.
-# NOTE: Please fill out the license field for your package! If it is unknown,
-# then please put 'unknown'.
-
-# Maintainer: Your Name <youremail@domain.com>
-pkgname=library-converter
+# Maintainer: Shraga Starbuck7410@gmail.com
+pkgname=library-converter-git
 pkgver=3.3.0
 pkgrel=1
 epoch=
@@ -34,12 +29,12 @@ prepare() {
 }
 
 build() {
-    cd "$srcdir/$pkgname"
+    cd "$srcdir/library-converter"
 	pkg main.js --target node22-linux-x64
 }
 
 package() {
-    cd "$srcdir/$pkgname"
+    cd "$srcdir/library-converter"
 	sudo cp main /usr/bin/library-converter
 }
 

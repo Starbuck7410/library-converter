@@ -55,6 +55,8 @@ async function convert(scannedLibrary, sourceDir, targetDir, format, rate, remov
     }
 
     // Actually does the conversion
+    let eta = 0;
+    let now = Date.now();
     let jobs = [];
     let workingJobs = [];
     let currentJobs = 0;
@@ -69,6 +71,14 @@ async function convert(scannedLibrary, sourceDir, targetDir, format, rate, remov
         jobs.push(ffmpegSync(input, output, redoAllFiles, rate, removeSilence).then(
             () => {
                 jobs[i] = true;
+                if (finishedJobs != 0) {
+                    let etaH = Math.floor(eta / 1000 / 60 / 60);
+                    let etaM = Math.floor(eta / 1000 / 60 % 60);
+                    let etaS = Math.floor(eta / 1000 % 60);
+                    interface.drawInterface(((finishedJobs) / filesToConvert.length), etaH, etaM, etaS, workingJobs, threads, false);
+                } else {
+                    interface.drawInterface(((finishedJobs) / filesToConvert.length), "--", "--", "--", workingJobs, threads, false);
+                }
             },
             (error) => {
                 // console.log("\x1b[31mFile failed to convert: " + input + "\x1b[37m");
@@ -81,13 +91,14 @@ async function convert(scannedLibrary, sourceDir, targetDir, format, rate, remov
                 workingJobs = workingJobs.filter(word => word != filesToConvert[i]);
                 currentJobs--;
                 finishedJobs++;
-                interface.drawInterface(((finishedJobs) / filesToConvert.length), 0, 0, 0, workingJobs, threads, false);
+
             }));
 
         currentJobs++;
         if (currentJobs > threads) {
             await Promise.race(filterJobs(jobs))
         }
+        eta = (Date.now() - now) / finishedJobs * (filesToConvert.length - finishedJobs);
     }
 
     await Promise.all(jobs);
@@ -96,14 +107,16 @@ async function convert(scannedLibrary, sourceDir, targetDir, format, rate, remov
     console.log("ffm-pegging complete!" + "\n\n\n");
 
     // Copies the remaining files to the right places
+    eta = 0;
 
     for (let k = 0; k < filesToCopy.length; k++) {
         let input = sourceDir + filesToCopy[k];
         let output = targetDir + filesToCopy[k];
 
-        interface.drawInterface(((k + 1) / filesToCopy.length), 0, 0, 0, [filesToCopy[k]], 1, true);
-        // console.log("Copying file: " + output);
-        // console.log((((k + 1) / filesToCopy.length) * 100).toFixed(2) + "% complete.");
+        etaH = Math.floor(eta / 1000 / 60 / 60);
+        etaM = Math.floor(eta / 1000 / 60 % 60);
+        etaS = Math.floor(eta / 1000 % 60);
+        interface.drawInterface(((k + 1) / filesToCopy.length), etaH, etaM, etaS, [filesToCopy[k]], 1, true);
 
         let error = copySync(input, output);
         if (error) {
@@ -111,7 +124,7 @@ async function convert(scannedLibrary, sourceDir, targetDir, format, rate, remov
             fs.unlinkSync(output);
             fails.push(input);
         }
-
+        eta = (Date.now() - now) / finishedJobs * (filesToConvert.length - finishedJobs);
     }
 
     interface.clearLines(3);
