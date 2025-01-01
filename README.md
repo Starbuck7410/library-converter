@@ -7,24 +7,32 @@ A comprehensive tool for converting music libraries into multiple formats with e
 To install, you have several options:
 
 ### Install from AUR
+
 ```bash
 git clone https://aur.archlinux.org/library-converter-git.git
 makepkg
 ```
+
 OR (if you have paru installed)
+
 ```bash
 paru library-converter
 ```
 
 ### To run from source
+
 To download the code, run:
+
 ```bash
 git clone https://github.com/Starbuck7410/library-converter.git
 ```
+
 and then to run library-converter, run:
+
 ```bash
 node main.js
 ```
+
 This should output an error because no directory was specified.
 
 ### Please note library-converter depends on ffmpeg being in your PATH, so make sure it's there before using it.
@@ -32,6 +40,7 @@ This should output an error because no directory was specified.
 ## Usage
 
 To convert your music library, run the following command:
+
 ```bash
 library-converter --dir /your/music/library"
 ```
@@ -105,11 +114,17 @@ Specifies the destination directory for the converted library.
 - **Example**: `--target /your/library/path/compressed`
 
 ## Future Enhancements
-- Fix the issue with the new interface on linux. It's... not the prettiest.
+
+- Fix the issue where text overflows ruin my nice interface
 - Address the Paru package issue related to `pkg` cleanup by executing `pkg` manually rather than installing it globally in the `PKGBUILD` file.
-- Add this file to the docs on install from the AUR so you can run ```man library-converter``` to see how to use it.
+- Add this file to the docs on install from the AUR so you can run `man library-converter` to see how to use it.
+- Add ignorelist so it doesnt copy .cue or .m3u or m3u8 files (they get detected by jellyfin and it RUINS ALL MY PLAYLISTS)
+- Consider the move to bun instead of nodejs. Maybe they have cookies.
+
+By the way, if you stubbed your mouse cursor on this git repository by accident, I apologize.
+But if you wanna help, feel free to open an issue for feature requests or bug repors or anything.
+(This is my only usable project on github and I have no idea how to use 99% of these features.)
 
 ## License
 
 This project is licensed under the GPL-V3 License.
-
